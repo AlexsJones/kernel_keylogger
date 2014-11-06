@@ -30,3 +30,7 @@ And unregister/remove
 sudo rmmod simple_one
 ```
 
+View the device 
+```
+cat /proc/devices
+```
