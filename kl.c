@@ -21,9 +21,14 @@
 #include <linux/keyboard.h>
 #include <linux/input.h>
 #include <linux/fs.h>
-
-#define DEVICE_NAME "chardev"
+#include <asm/current.h>
+#include <asm/uaccess.h>
+#include <asm/segment.h>
+#
+#define DEVICE_NAME "kl_dev"
 struct semaphore sem;
+
+char msg_data[80]="Hello from the kernel";
 
 static int major;
 
@@ -50,24 +55,18 @@ static const char* keymapShiftActivated[] =
 
 static int shiftKeyDepressed = 0;
 
-static int is_device_open = 0;
-
 static int device_release(struct inode *inode, struct file *file) {
 
-  --is_device_open;
-  module_put(THIS_MODULE);
+  return 0;
 }
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset) {
-
+  
+  if(copy_to_user(buffer,msg_data,strlen(msg_data)) != 0) {
+    printk(KERN_ALERT "Error with user copy\n");
+  }
+  return strlen(msg_data);
 }
 static int device_open(struct inode *inode, struct file *file) {
-  
-  if(is_device_open)
-    return -EBUSY;
-
-  ++is_device_open;
-  
-  try_module_get(THIS_MODULE);
   return 0;
 }
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off) {
