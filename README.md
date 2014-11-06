@@ -24,6 +24,16 @@ And then observe the registration
 dmesg | tail -1
 ```
 
+To read from the char device you'll need to create the correct file with 
+
+  - Note that I've assumed your device will register against 250, this may not be the case on your system, so check the dmesg output and adjust the value
+
+```
+./link_dev
+```
+
+
+
 And unregister/remove
 
 ```

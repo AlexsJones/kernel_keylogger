@@ -1,0 +1,3 @@
+#250 should be replaced with the major number that the device is registered with
+#Found with dmesg | tail -5f after registering
+sudo mknod /dev/kl_dev c 250 0
