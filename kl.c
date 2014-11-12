@@ -28,7 +28,8 @@
 #define DEVICE_NAME "kl_dev"
 struct semaphore sem;
 
-char msg_data[80]="Hello from the kernel";
+char msg[80]="Hello from the kernel";
+char *msg_ptr;
 
 static int major;
 
@@ -61,12 +62,19 @@ static int device_release(struct inode *inode, struct file *file) {
 }
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset) {
   
-  if(copy_to_user(buffer,msg_data,strlen(msg_data)) != 0) {
-    printk(KERN_ALERT "Error with user copy\n");
+  int bytes_read = 0;
+  if(*msg_ptr == 0) {
+    return 0;
   }
-  return strlen(msg_data);
+  while(length && *msg_ptr) {
+    put_user(*(msg_ptr++),buffer++);
+    length--;
+    bytes_read++;
+  }
+  return bytes_read;
 }
 static int device_open(struct inode *inode, struct file *file) {
+  msg_ptr = msg;
   return 0;
 }
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off) {
