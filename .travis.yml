@@ -1,0 +1,11 @@
+language: c
+compiler:
+    - gcc
+    - clang
+script: make
+notifications:
+    email:
+        recipients:
+            - alexsimonjones@gmail.com
+        on_sucess: [never]
+        on_failure: [always] # default: always
