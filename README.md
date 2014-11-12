@@ -1,5 +1,6 @@
 kernel_keylogger
 ---------
+[![Build Status](https://travis-ci.org/AlexsJones/kernel_keylogger.svg)](https://travis-ci.org/AlexsJones/kernel_keylogger)
 
 This is a proof of concept
 Use at your own discretion
